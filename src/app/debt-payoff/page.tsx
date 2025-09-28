@@ -147,15 +147,17 @@ export default function DebtPayoff() {
           extraPayment: parseFloat(extraPayment) || 0,
         }),
       });
+      
+      if (!response.ok) {
+        const errorText = await response.text(); // Get the raw HTML/text response
+        throw new Error(errorText || `Server returned an error: ${response.status}`)
+      }
 
       const data = await response.json();
 
-      if (!response.ok) {
-        const errorText = await response.text(); // Get the raw HTML/text response
-        console.error("Server returned an error:", response.status, response.statusText);
-        console.error("Raw HTML Response from Server:", errorText); // This will show you the 404 or 500 page
-        throw new Error(`Server Error: ${response.status}`);
-      }
+      if (data.error) {
+      throw new Error(data.error);
+    }
       
       setAiStrategy(data.strategy);
 
