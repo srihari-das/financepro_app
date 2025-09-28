@@ -12,8 +12,10 @@ import {
   TrashIcon,
   PencilIcon
 } from '@heroicons/react/24/outline'
+import ReactMarkdown from 'react-markdown'
 
 export default function DebtPayoff() {
+  
   const [activeTab, setActiveTab] = useState('overview')
   const [newDebt, setNewDebt] = useState({
     name: '',
@@ -133,6 +135,51 @@ export default function DebtPayoff() {
       sub.id === id ? { ...sub, active: !sub.active } : sub
     ))
   }
+
+  // At the top of your DebtPayoff component
+  const [extraPayment, setExtraPayment] = useState('');
+  const [aiStrategy, setAiStrategy] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleGenerateStrategy = async () => {
+    setIsGenerating(true);
+    setError(null);
+    setAiStrategy('');
+
+    const cancelableSubscriptions = subscriptions.filter(
+      (sub) => sub.category === 'nice-to-have' && sub.active
+    );
+
+    try {
+      const response = await fetch('/api/debt-strategy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          debts: debts,
+          subscriptions: cancelableSubscriptions,
+          extraPayment: parseFloat(extraPayment) || 0,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        const errorText = await response.text(); // Get the raw HTML/text response
+        console.error("Server returned an error:", response.status, response.statusText);
+        console.error("Raw HTML Response from Server:", errorText); // This will show you the 404 or 500 page
+        throw new Error(`Server Error: ${response.status}`);
+      }
+      
+      setAiStrategy(data.strategy);
+
+    } catch (err: any) {
+      setError(err.message || 'An unknown error occurred.');
+      console.error('Error generating AI strategy:', err);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
@@ -453,93 +500,62 @@ export default function DebtPayoff() {
         {activeTab === 'strategies' && (
           <div className="max-w-4xl mx-auto space-y-6">
             <div className="bg-white rounded-xl shadow-sm p-8">
-              <h2 className="text-2xl font-semibold text-gray-900 mb-6">Debt Payoff Strategies</h2>
-              
-              <div className="grid md:grid-cols-2 gap-8">
-                {/* Debt Avalanche */}
-                <div className="border border-blue-200 rounded-lg p-6">
-                  <div className="flex items-center mb-4">
-                    <div className="bg-blue-100 p-2 rounded-lg mr-3">
-                      <ChartBarIcon className="h-6 w-6 text-blue-600" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900">Debt Avalanche</h3>
-                  </div>
-                  <p className="text-gray-600 mb-4">
-                    Pay minimums on all debts, then put extra money toward the highest interest rate debt first.
-                  </p>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>Total Interest Saved:</span>
-                      <span className="font-semibold text-blue-600">$2,847</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Time to Debt Free:</span>
-                      <span className="font-semibold text-blue-600">2.1 years</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Best For:</span>
-                      <span className="font-semibold">Mathematically optimal</span>
-                    </div>
-                  </div>
-                  <button className="w-full mt-4 bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                    Use This Strategy
-                  </button>
-                </div>
+              <div className="text-center">
+                <h2 className="text-2xl font-bold text-gray-900 mb-2">
+                  Your Personalized AI-Powered Strategy
+                </h2>
+                <p className="text-gray-600">
+                  Let our AI analyze your finances to create a custom payoff plan, just for you.
+                </p>
+              </div>
 
-                {/* Debt Snowball */}
-                <div className="border border-green-200 rounded-lg p-6">
-                  <div className="flex items-center mb-4">
-                    <div className="bg-green-100 p-2 rounded-lg mr-3">
-                      <ChartPieIcon className="h-6 w-6 text-green-600" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-900">Debt Snowball</h3>
+              <div className="mt-8 bg-gray-50 rounded-lg p-6">
+                <div className="grid md:grid-cols-2 gap-4 items-end">
+                    <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Extra Monthly Payment (Optional)
+                    </label>
+                    <input
+                      type="number"
+                      value={extraPayment}
+                      onChange={(e) => setExtraPayment(e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                      placeholder="e.g., 200"
+                    />
                   </div>
-                  <p className="text-gray-600 mb-4">
-                    Pay minimums on all debts, then put extra money toward the smallest balance first.
-                  </p>
-                  <div className="space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span>Total Interest Saved:</span>
-                      <span className="font-semibold text-green-600">$2,156</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Time to Debt Free:</span>
-                      <span className="font-semibold text-green-600">2.3 years</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Best For:</span>
-                      <span className="font-semibold">Building momentum</span>
-                    </div>
-                  </div>
-                  <button className="w-full mt-4 bg-green-600 text-white py-2 rounded-lg hover:bg-green-700 transition-colors">
-                    Use This Strategy
+                  <button
+                    onClick={handleGenerateStrategy}
+                    disabled={isGenerating}
+                      className="w-full bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors disabled:bg-indigo-400"
+                    >
+                    {isGenerating ? 'Generating Plan...' : 'Generate My Personalized Strategy'}
                   </button>
                 </div>
               </div>
 
-              <div className="mt-8 bg-gray-50 rounded-lg p-6">
-                <h4 className="font-semibold text-gray-900 mb-4">Extra Payment Calculator</h4>
-                <div className="grid md:grid-cols-3 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Extra Monthly Payment
-                    </label>
-                    <input
-                      type="number"
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                      placeholder="200"
-                    />
+              {/* Display area for the AI's response */}
+              <div className="mt-6">
+                {isGenerating && (
+                  <div className="text-center text-gray-500 py-8">
+                    <p>Please wait while our AI crafts your personalized plan...</p>
                   </div>
-                  <div className="flex items-end">
-                    <button className="w-full bg-indigo-600 text-white py-2 rounded-lg hover:bg-indigo-700 transition-colors">
-                      Calculate Impact
-                    </button>
+                )}
+
+                {error && (
+                  <div className="p-4 bg-red-50 text-red-700 border border-red-200 rounded-lg">
+                    <p className="font-medium">An error occurred:</p>
+                    <p className="text-sm">{error}</p>
                   </div>
-                  <div className="bg-indigo-50 p-4 rounded-lg">
-                    <div className="text-sm text-gray-600">Time Saved</div>
-                    <div className="text-xl font-bold text-indigo-600">8 months</div>
+                )}
+
+                {aiStrategy && (
+                  <div className="p-6 border border-gray-200 rounded-lg bg-gray-50/50">
+                    <h3 className="text-lg font-semibold text-gray-800 mb-3">Your Custom Plan:</h3>
+                    <div className="prose prose-sm max-w-none text-gray-700 leading-relaxed">
+                      <ReactMarkdown>{aiStrategy}</ReactMarkdown>
+                    </div>
                   </div>
-                </div>
+                )}
               </div>
             </div>
           </div>
