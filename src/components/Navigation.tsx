@@ -52,9 +52,9 @@ const Navigation = () => {
 
   // Navigation items that are only visible when logged in
   const protectedNavItems = [
-    { name: 'Survey', href: '/survey' },
     { name: 'Savings Planner', href: '/savings-planner' },
     { name: 'Debt Payoff', href: '/debt-payoff' },
+    { name: 'Analytics', href: '/analytics' },
     { name: 'Profile', href: '/profile' },
   ]
 
@@ -102,7 +102,7 @@ const Navigation = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex-shrink-0">
-              <span className="text-2xl font-bold text-indigo-600">FinancePro</span>
+              <span className="text-2xl font-bold text-indigo-600">Capital Compass</span>
             </Link>
           </div>
 

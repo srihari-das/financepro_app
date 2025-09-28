@@ -91,7 +91,7 @@ export default function SignUp() {
       if (error) throw error
 
       if (data.user) {
-        setSuccess('Account created successfully! Please check your email to confirm your account.')
+        setSuccess('Account created successfully! Redirecting to survey...')
         // Clear form
         setFormData({
           firstName: '',
@@ -102,10 +102,10 @@ export default function SignUp() {
           agreeTerms: false
         })
         
-        // Redirect after 3 seconds
+        // Redirect to survey after 2 seconds
         setTimeout(() => {
-          router.push('/signin')
-        }, 3000)
+          router.push('/survey')
+        }, 2000)
       }
 
     } catch (error: any) {
@@ -124,7 +124,7 @@ export default function SignUp() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: `${window.location.origin}/survey`
         }
       })
       
@@ -144,7 +144,7 @@ export default function SignUp() {
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'twitter',
         options: {
-          redirectTo: `${window.location.origin}/dashboard`
+          redirectTo: `${window.location.origin}/survey`
         }
       })
       
@@ -164,7 +164,7 @@ export default function SignUp() {
             Create Your Account
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Join FinancePro and start your financial journey
+            Join Capital Compass and start your financial journey
           </p>
         </div>
       </div>

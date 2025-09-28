@@ -1,4 +1,7 @@
+'use client'
+
 import Link from 'next/link'
+import { useState, useEffect } from 'react'
 import { 
   CurrencyDollarIcon, 
   AcademicCapIcon, 
@@ -6,14 +9,52 @@ import {
   UserIcon,
   CreditCardIcon
 } from '@heroicons/react/24/outline'
+import { createClient } from '@supabase/supabase-js'
+import type { User } from '@supabase/supabase-js'
+
+// Create supabase client with fallbacks
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+// Only create supabase client if both URL and key are properly configured
+const supabase = (supabaseUrl && supabaseKey && 
+                 supabaseUrl !== 'your_supabase_url_here' && 
+                 supabaseKey !== 'your_supabase_anon_key_here')
+  ? createClient(supabaseUrl, supabaseKey)
+  : null
 
 export default function Home() {
+  const [user, setUser] = useState<User | null>(null)
+
+  useEffect(() => {
+    // If supabase is not configured, just set loading to false
+    if (!supabase) {
+      setUser(null)
+      return
+    }
+
+    const getSession = async () => {
+      const { data: { session } } = await supabase.auth.getSession()
+      setUser(session?.user ?? null)
+    }
+
+    getSession()
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (_event, session) => {
+        setUser(session?.user ?? null)
+      }
+    )
+
+    return () => subscription.unsubscribe()
+  }, [])
+
   const features = [
     {
       title: 'Survey',
       description: 'Start your financial journey with our comprehensive assessment to understand your goals and preferences.',
       icon: DocumentCheckIcon,
-      href: '/survey',
+      href: user ? '/survey' : '/signup',
       color: 'bg-blue-500'
     },
     {
@@ -27,24 +68,18 @@ export default function Home() {
       title: 'Goal-Based Savings Planner',
       description: 'Create personalized savings plans based on your income, goals, and timeline.',
       icon: CurrencyDollarIcon,
-      href: '/savings-planner',
+      href: user ? '/savings-planner' : '/signup',
       color: 'bg-purple-500'
     },
     {
       title: 'Smart Debt Payoff',
       description: 'Track and manage your debts with intelligent categorization and payment strategies.',
       icon: CreditCardIcon,
-      href: '/debt-payoff',
+      href: user ? '/debt-payoff' : '/signup',
       color: 'bg-red-500'
     },
   ]
 
-  const stats = [
-    { label: 'Users Helped', value: '10,000+' },
-    { label: 'Goals Achieved', value: '25,000+' },
-    { label: 'Debt Eliminated', value: '$50M+' },
-    { label: 'Financial Literacy Score', value: '95%' },
-  ]
 
   return (
     <div className="min-h-screen">
@@ -57,7 +92,7 @@ export default function Home() {
               <span className="block text-yellow-300">Financial Future</span>
             </h1>
             <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto leading-relaxed">
-              FinancePro helps you plan, save, and achieve your financial goals with personalized tools and expert guidance.
+              Capital Compass helps you plan, save, and achieve your financial goals with personalized tools and expert guidance.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
@@ -67,33 +102,16 @@ export default function Home() {
                 Get Started Free
               </Link>
               <Link
-                href="/survey"
+                href="/signup"
                 className="border-2 border-white text-white hover:bg-white hover:text-gray-900 px-8 py-4 rounded-lg text-lg font-semibold transition-colors duration-200 inline-flex items-center justify-center"
               >
-                Take Our Survey
+                Learn More
               </Link>
             </div>
           </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="bg-white py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-            {stats.map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-3xl md:text-4xl font-bold text-indigo-600 mb-2">
-                  {stat.value}
-                </div>
-                <div className="text-gray-600 font-medium">
-                  {stat.label}
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Features Section */}
       <section className="bg-gray-50 py-20">
@@ -140,7 +158,7 @@ export default function Home() {
             Ready to Transform Your Financial Life?
           </h2>
           <p className="text-xl mb-8 opacity-90">
-            Join thousands of users who have already taken control of their finances with FinancePro.
+            Join thousands of users who have already taken control of their finances with Capital Compass.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
@@ -164,7 +182,7 @@ export default function Home() {
       <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="text-2xl font-bold text-indigo-400 mb-4">FinancePro</div>
+            <div className="text-2xl font-bold text-indigo-400 mb-4">Capital Compass</div>
             <p className="text-gray-400 mb-6">
               Empowering your financial future with intelligent planning tools.
             </p>
@@ -174,9 +192,6 @@ export default function Home() {
               </Link>
               <Link href="/signup" className="text-gray-400 hover:text-white transition-colors">
                 Sign Up
-              </Link>
-              <Link href="/survey" className="text-gray-400 hover:text-white transition-colors">
-                Survey
               </Link>
             </div>
           </div>

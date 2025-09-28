@@ -19,11 +19,6 @@ export default function Survey() {
     timeHorizon: '',
     goalAmount: '',
     
-    // Current Financial Status
-    currentSavings: '',
-    monthlyExpenses: '',
-    existingDebts: '',
-    
     // Risk Assessment
     riskTolerance: '',
     investmentExperience: '',
@@ -41,10 +36,6 @@ export default function Survey() {
     {
       title: 'Financial Goals',
       description: 'What are you working towards?'
-    },
-    {
-      title: 'Current Situation',
-      description: 'Help us understand your finances'
     },
     {
       title: 'Risk & Experience',
@@ -89,13 +80,13 @@ export default function Survey() {
         financialgoal: formData.primaryGoal,
         timeline: formData.timeHorizon,
         goalamount: parseFloat(formData.goalAmount.replace(/[$,]/g, '')) || 0,
-        currentsavings: parseSavingsRange(formData.currentSavings),
-        monthlyexpenses: parseFloat(formData.monthlyExpenses.replace(/[$,]/g, '')) || 0,
         goaltags: mapFinancialPriorities(formData.financialPriorities),
-        age: parseAgeRange(formData.age),
+        age: parseInt(formData.age) || 0,
         employmentstatus: mapEmploymentStatus(formData.employmentStatus),
-        annualincome: parseIncomeRange(formData.annualIncome),
-        checkingbalance: 0 // Default value, user can update later
+        annualincome: parseFloat(formData.annualIncome.replace(/[$,]/g, '')) || 0,
+        checkingbalance: 0, // Default value, user can update later
+        currentsavings: 0, // Default value, user can update later
+        monthlyexpenses: 0 // Default value, user can update later
       }
 
       const { error } = await supabase
@@ -113,35 +104,6 @@ export default function Survey() {
   }
 
   // Helper functions to parse survey data
-  const parseSavingsRange = (range: string): number => {
-    if (range.includes('Less than $1,000')) return 500
-    if (range.includes('$1,000 - $5,000')) return 3000
-    if (range.includes('$5,000 - $10,000')) return 7500
-    if (range.includes('$10,000 - $25,000')) return 17500
-    if (range.includes('$25,000 - $50,000')) return 37500
-    if (range.includes('More than $50,000')) return 75000
-    return 0
-  }
-
-  const parseAgeRange = (range: string): number => {
-    if (range.includes('18-25')) return 22
-    if (range.includes('26-35')) return 30
-    if (range.includes('36-45')) return 40
-    if (range.includes('46-55')) return 50
-    if (range.includes('56-65')) return 60
-    if (range.includes('65+')) return 70
-    return 30
-  }
-
-  const parseIncomeRange = (range: string): number => {
-    if (range.includes('Less than $25,000')) return 20000
-    if (range.includes('$25,000 - $50,000')) return 37500
-    if (range.includes('$50,000 - $75,000')) return 62500
-    if (range.includes('$75,000 - $100,000')) return 87500
-    if (range.includes('$100,000 - $150,000')) return 125000
-    if (range.includes('More than $150,000')) return 200000
-    return 50000
-  }
 
   const mapEmploymentStatus = (status: string): EmploymentStatus => {
     if (status.includes('Full-time')) return 'Employed'
@@ -175,24 +137,17 @@ export default function Survey() {
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                What&apos;s your age range?
+                What&apos;s your age?
               </label>
-              <div className="grid grid-cols-2 gap-3">
-                {['18-25', '26-35', '36-45', '46-55', '56-65', '65+'].map((range) => (
-                  <button
-                    key={range}
-                    type="button"
-                    onClick={() => handleInputChange('age', range)}
-                    className={`p-3 rounded-lg border text-sm font-medium transition-colors ${
-                      formData.age === range
-                        ? 'bg-indigo-50 border-indigo-500 text-indigo-700'
-                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    {range}
-                  </button>
-                ))}
-              </div>
+              <input
+                type="number"
+                placeholder="Enter your age"
+                min="18"
+                max="100"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                value={formData.age}
+                onChange={(e) => handleInputChange('age', e.target.value)}
+              />
             </div>
 
             <div>
@@ -226,31 +181,15 @@ export default function Survey() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Annual Income Range
+                Annual Income
               </label>
-              <div className="grid grid-cols-1 gap-3">
-                {[
-                  'Less than $25,000',
-                  '$25,000 - $50,000',
-                  '$50,000 - $75,000',
-                  '$75,000 - $100,000',
-                  '$100,000 - $150,000',
-                  'More than $150,000'
-                ].map((income) => (
-                  <button
-                    key={income}
-                    type="button"
-                    onClick={() => handleInputChange('annualIncome', income)}
-                    className={`p-3 rounded-lg border text-left font-medium transition-colors ${
-                      formData.annualIncome === income
-                        ? 'bg-indigo-50 border-indigo-500 text-indigo-700'
-                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    {income}
-                  </button>
-                ))}
-              </div>
+              <input
+                type="text"
+                placeholder="e.g., $75,000"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
+                value={formData.annualIncome}
+                onChange={(e) => handleInputChange('annualIncome', e.target.value)}
+              />
             </div>
           </div>
         )
@@ -333,83 +272,8 @@ export default function Survey() {
           </div>
         )
 
+
       case 2:
-        return (
-          <div className="space-y-6">
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Current savings amount
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                {[
-                  'Less than $1,000',
-                  '$1,000 - $5,000',
-                  '$5,000 - $10,000',
-                  '$10,000 - $25,000',
-                  '$25,000 - $50,000',
-                  'More than $50,000'
-                ].map((savings) => (
-                  <button
-                    key={savings}
-                    type="button"
-                    onClick={() => handleInputChange('currentSavings', savings)}
-                    className={`p-3 rounded-lg border text-sm font-medium transition-colors ${
-                      formData.currentSavings === savings
-                        ? 'bg-indigo-50 border-indigo-500 text-indigo-700'
-                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    {savings}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Monthly expenses
-              </label>
-              <input
-                type="text"
-                placeholder="e.g., $3,000"
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
-                value={formData.monthlyExpenses}
-                onChange={(e) => handleInputChange('monthlyExpenses', e.target.value)}
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Do you have existing debts?
-              </label>
-              <div className="space-y-2">
-                {[
-                  'No debt',
-                  'Credit card debt',
-                  'Student loans',
-                  'Car loan',
-                  'Mortgage',
-                  'Multiple types of debt'
-                ].map((debt) => (
-                  <button
-                    key={debt}
-                    type="button"
-                    onClick={() => handleInputChange('existingDebts', debt)}
-                    className={`w-full p-3 rounded-lg border text-left font-medium transition-colors ${
-                      formData.existingDebts === debt
-                        ? 'bg-indigo-50 border-indigo-500 text-indigo-700'
-                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
-                    }`}
-                  >
-                    {debt}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </div>
-        )
-
-      case 3:
         return (
           <div className="space-y-6">
             <div>
@@ -470,7 +334,7 @@ export default function Survey() {
           </div>
         )
 
-      case 4:
+      case 3:
         return (
           <div className="space-y-6">
             <div>

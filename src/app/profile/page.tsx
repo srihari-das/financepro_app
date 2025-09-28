@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Link from 'next/link'
 import { 
   UserIcon, 
   ChartBarIcon, 
@@ -107,7 +108,6 @@ export default function Profile() {
                   <p className="text-gray-600">
                     {userProfile ? userProfile.email : 'Loading email...'}
                   </p>
-                  <p className="text-sm text-gray-500">User ID: {userProfile?.userid}</p>
                 </div>
                 <button
                   onClick={() => setIsEditing(!isEditing)}
@@ -245,7 +245,7 @@ export default function Profile() {
                     </div>
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <div className="text-sm font-medium text-gray-700">Net Worth</div>
-                      <div className={`font-numeric ${financialSummary?.netWorth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <div className={`font-numeric ${(financialSummary?.netWorth || 0) >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                         ${financialSummary?.netWorth?.toLocaleString() || '0'}
                       </div>
                     </div>
@@ -317,13 +317,13 @@ export default function Profile() {
               </div>
 
               <div className="px-6 py-4 border-t border-gray-200 bg-gray-50 rounded-b-xl">
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <button className="flex-1 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+                <div className="flex justify-center">
+                  <Link 
+                    href="/survey" 
+                    className="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                  >
                     Update Survey Responses
-                  </button>
-                  <button className="flex-1 border border-gray-300 hover:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg font-medium transition-colors">
-                    Download Financial Report
-                  </button>
+                  </Link>
                 </div>
               </div>
             </div>

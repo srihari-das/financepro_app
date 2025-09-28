@@ -10,6 +10,7 @@ import {
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
 import { useSavingsGoals } from '@/hooks/useFinancialData'
+import financialDataService from '@/services/financial-data'
 import { GoalCategory } from '@/types/database'
 
 export default function SavingsPlanner() {
@@ -25,6 +26,10 @@ export default function SavingsPlanner() {
 
   // Fetch savings goals from database
   const { data: savingsData, loading, error } = useSavingsGoals()
+  
+  // Add state for refresh
+  const [isCreating, setIsCreating] = useState(false)
+  const [createError, setCreateError] = useState('')
 
   // Loading state
   if (loading) {
@@ -102,21 +107,45 @@ export default function SavingsPlanner() {
     }
   }
 
-  const handleCreateGoal = (e: React.FormEvent) => {
+  const handleCreateGoal = async (e: React.FormEvent) => {
     e.preventDefault()
-    // TODO: Implement API call to create new goal in Supabase
-    alert('Goal creation will be implemented with Supabase integration')
+    setIsCreating(true)
+    setCreateError('')
     
-    // For now, reset form and switch to overview
-    setNewGoal({
-      name: '',
-      targetAmount: '',
-      currentAmount: '',
-      targetDate: '',
-      priority: 'Med' as 'High' | 'Med' | 'Low',
-      category: 'Other' as GoalCategory
-    })
-    setActiveTab('overview')
+    try {
+      const goalData = {
+        name: newGoal.name,
+        targetAmount: parseFloat(newGoal.targetAmount),
+        currentAmount: parseFloat(newGoal.currentAmount) || 0,
+        targetDate: newGoal.targetDate,
+        priority: newGoal.priority,
+        category: newGoal.category
+      }
+      
+      const success = await financialDataService.createSavingsGoal(goalData)
+      
+      if (success) {
+        // Reset form and switch to overview
+        setNewGoal({
+          name: '',
+          targetAmount: '',
+          currentAmount: '',
+          targetDate: '',
+          priority: 'Med' as 'High' | 'Med' | 'Low',
+          category: 'Other' as GoalCategory
+        })
+        setActiveTab('overview')
+        // Refresh the page to show new goal
+        window.location.reload()
+      } else {
+        setCreateError('Failed to create savings goal. Please try again.')
+      }
+    } catch (error) {
+      setCreateError('An error occurred while creating the goal.')
+      console.error('Error creating goal:', error)
+    } finally {
+      setIsCreating(false)
+    }
   }
 
   return (
@@ -421,19 +450,27 @@ export default function SavingsPlanner() {
                   </div>
                 )}
 
+                {createError && (
+                  <div className="p-3 bg-red-100 border border-red-400 text-red-700 rounded-md">
+                    {createError}
+                  </div>
+                )}
+
                 <div className="flex space-x-4">
                   <button
                     type="button"
                     onClick={() => setActiveTab('overview')}
-                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors"
+                    disabled={isCreating}
+                    className="flex-1 px-6 py-3 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 font-medium transition-colors disabled:opacity-50"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
-                    className="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors"
+                    disabled={isCreating}
+                    className="flex-1 px-6 py-3 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 font-medium transition-colors disabled:opacity-50"
                   >
-                    Create Goal
+                    {isCreating ? 'Creating...' : 'Create Goal'}
                   </button>
                 </div>
               </form>

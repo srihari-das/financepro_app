@@ -138,6 +138,43 @@ export class FinancialDataService {
     }
   }
 
+  // Create a new savings goal
+  async createSavingsGoal(goalData: {
+    name: string
+    targetAmount: number
+    currentAmount: number
+    targetDate: string
+    priority: 'High' | 'Med' | 'Low'
+    category: string
+  }): Promise<boolean> {
+    try {
+      const userId = await getCurrentUserId()
+      if (!userId) return false
+
+      const { error } = await supabase
+        .from('goalsavings')
+        .insert({
+          userid: userId,
+          goalcategory: goalData.category,
+          goalamount: goalData.targetAmount,
+          checkingbalance: goalData.currentAmount,
+          deadlinetogoal: goalData.targetDate,
+          prioritylevel: goalData.priority,
+          createdat: new Date().toISOString()
+        })
+
+      if (error) {
+        console.error('Error creating savings goal:', error)
+        return false
+      }
+
+      return true
+    } catch (error) {
+      console.error('Failed to create savings goal:', error)
+      return false
+    }
+  }
+
   // Get savings goals summary
   async getSavingsGoals(): Promise<SavingsGoalSummary | null> {
     try {
