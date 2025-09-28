@@ -26,6 +26,10 @@ export default function DebtPayoff() {
     interestRate: '',
     type: 'CreditCard' as DebtType
   })
+  const [extraPayment, setExtraPayment] = useState('');
+  const [aiStrategy, setAiStrategy] = useState('');
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   // Fetch debt and subscription data from database
   const { data: debtData, loading: debtLoading, error: debtError } = useDebtInfo()
@@ -126,19 +130,12 @@ export default function DebtPayoff() {
   }
 
   // At the top of your DebtPayoff component
-  const [extraPayment, setExtraPayment] = useState('');
-  const [aiStrategy, setAiStrategy] = useState('');
-  const [isGenerating, setIsGenerating] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const handleGenerateStrategy = async () => {
     setIsGenerating(true);
     setError(null);
     setAiStrategy('');
 
-    const cancelableSubscriptions = subscriptions.filter(
-      (sub) => sub.category === 'nice-to-have' && sub.active
-    );
 
     try {
       const response = await fetch('/api/debt-strategy', {
@@ -146,7 +143,7 @@ export default function DebtPayoff() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           debts: debts,
-          subscriptions: cancelableSubscriptions,
+          subscriptions: subscriptionData,
           extraPayment: parseFloat(extraPayment) || 0,
         }),
       });
@@ -650,7 +647,7 @@ export default function DebtPayoff() {
                     <select
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
                       value={newDebt.type}
-                      onChange={(e) => setNewDebt({ ...newDebt, type: e.target.value })}
+                      onChange={(e) => setNewDebt({ ...newDebt, type: e.target.value as DebtType })}
                     >
                       <option value="CreditCard">Credit Card</option>
                       <option value="StudentLoan">Student Loan</option>

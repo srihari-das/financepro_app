@@ -23,8 +23,8 @@ def main():
             """
             You are an encouraging financial advisor for the webiste FinancePro. Your goal is to create a personalized,
             actionable debt payoff strategy. Analyze the user's loan and subscription data to find opportunities for savings
-            from the given cancelable subscriptions. Mention how the extra monthly payment and saved money from canceling subscriptions could
-            affects the timeline and interest amounts for paying off debts. 
+            from the given list of all subscriptions. Mention how the extra monthly payment and saved money from canceling subscriptions could
+            affects the timeline and interest amounts for paying off debts. Make sure you don't cancel necessary subscriptions.
             Present the final output as a markdown-formatted numbered list. Do not ask the user to contact you again, since the
             text generation is a one-off.
             """
