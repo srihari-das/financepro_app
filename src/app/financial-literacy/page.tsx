@@ -245,21 +245,23 @@ export default function FinancialLiteracyHub() {
               </button>
             </div>
 
-            {/* Integration Notice */}
-            <div className="bg-blue-50 border border-blue-200 rounded-xl p-6">
-              <div className="text-center">
-                <div className="text-blue-600 mb-2">
-                  <svg className="h-12 w-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 8.172V5L8 4z" />
-                  </svg>
-                </div>
-                <h4 className="font-semibold text-blue-900 mb-2">Integration Ready</h4>
-                <p className="text-sm text-blue-700">
-                  This placeholder is designed to integrate with your existing Financial Literacy Hub app. 
-                  The interface provides space for your interactive learning content.
-                </p>
-              </div>
-            </div>
+{/* Streamlit Financial Tutor Embed */}
+<div className="bg-white rounded-xl shadow-sm p-6">
+  <h3 className="text-lg font-semibold text-gray-900 mb-4">
+    💵 Financial Literacy Tutor
+  </h3>
+  <iframe
+    src="https://financial-literacy.streamlit.app/?embed=true"
+    style={{
+      width: '100%',
+      height: '600px',   // adjust as needed
+      border: '1px solid #e5e7eb',
+      borderRadius: '0.75rem'
+    }}
+    title="Financial Literacy Tutor"
+  />
+</div>
+
           </div>
         </div>
       </div>
