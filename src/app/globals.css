@@ -17,12 +17,26 @@
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: 'Bungee', cursive;
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+  
+  /* Numeric font utilities */
+  .font-numeric {
+    font-family: 'Nunito Sans', sans-serif;
+    font-variant-numeric: tabular-nums;
+  }
+  
+  /* Apply numeric font to elements containing numbers */
+  .text-2xl:has-digits,
+  .text-3xl:has-digits,
+  .text-4xl:has-digits,
+  .text-lg:has-digits {
+    font-family: 'Nunito Sans', sans-serif;
+    font-variant-numeric: tabular-nums;
   }
 }
 

@@ -139,7 +139,7 @@ export default function Profile() {
                   {getScoreLabel(financialScore)}
                 </div>
                 <div className="mt-4">
-                  <div className="text-3xl font-bold text-gray-900">{financialScore}/100</div>
+                  <div className="text-3xl font-bold text-gray-900 font-numeric">{financialScore}/100</div>
                   <div className="text-sm text-gray-600">Financial Wellness Score</div>
                 </div>
                 <p className="mt-3 text-sm text-gray-500">
@@ -167,19 +167,19 @@ export default function Profile() {
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <div className="text-sm font-medium text-gray-700">Checking Balance</div>
-                      <div className="text-gray-900">${financialSummary?.accountDetails.checkingbalance?.toLocaleString() || '0'}</div>
+                      <div className="text-gray-900 font-numeric">${financialSummary?.accountDetails.checkingbalance?.toLocaleString() || '0'}</div>
                     </div>
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <div className="text-sm font-medium text-gray-700">Current Savings</div>
-                      <div className="text-gray-900">${financialSummary?.accountDetails.currentsavings?.toLocaleString() || '0'}</div>
+                      <div className="text-gray-900 font-numeric">${financialSummary?.accountDetails.currentsavings?.toLocaleString() || '0'}</div>
                     </div>
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <div className="text-sm font-medium text-gray-700">Monthly Income</div>
-                      <div className="text-gray-900">${financialSummary?.totalMonthlyIncome?.toLocaleString() || '0'}</div>
+                      <div className="text-gray-900 font-numeric">${financialSummary?.totalMonthlyIncome?.toLocaleString() || '0'}</div>
                     </div>
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <div className="text-sm font-medium text-gray-700">Monthly Expenses</div>
-                      <div className="text-gray-900">${financialSummary?.totalMonthlyExpenses?.toLocaleString() || '0'}</div>
+                      <div className="text-gray-900 font-numeric">${financialSummary?.totalMonthlyExpenses?.toLocaleString() || '0'}</div>
                     </div>
                   </div>
                 </div>
@@ -201,11 +201,11 @@ export default function Profile() {
                     </div>
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <div className="text-sm font-medium text-gray-700">Target Amount</div>
-                      <div className="text-gray-900">${financialSummary?.accountDetails.goalamount?.toLocaleString() || '0'}</div>
+                      <div className="text-gray-900 font-numeric">${financialSummary?.accountDetails.goalamount?.toLocaleString() || '0'}</div>
                     </div>
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <div className="text-sm font-medium text-gray-700">Current Savings</div>
-                      <div className="text-gray-900">${financialSummary?.accountDetails.currentsavings?.toLocaleString() || '0'}</div>
+                      <div className="text-gray-900 font-numeric">${financialSummary?.accountDetails.currentsavings?.toLocaleString() || '0'}</div>
                     </div>
                   </div>
                 </div>
@@ -223,7 +223,7 @@ export default function Profile() {
                     </div>
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <div className="text-sm font-medium text-gray-700">Annual Income</div>
-                      <div className="text-gray-900">${financialSummary?.accountDetails.annualincome?.toLocaleString() || '0'}</div>
+                      <div className="text-gray-900 font-numeric">${financialSummary?.accountDetails.annualincome?.toLocaleString() || '0'}</div>
                     </div>
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <div className="text-sm font-medium text-gray-700">Age</div>
@@ -241,11 +241,11 @@ export default function Profile() {
                   <div className="grid md:grid-cols-2 gap-4">
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <div className="text-sm font-medium text-gray-700">Total Debt</div>
-                      <div className="text-gray-900">${financialSummary?.totalDebt?.toLocaleString() || '0'}</div>
+                      <div className="text-gray-900 font-numeric">${financialSummary?.totalDebt?.toLocaleString() || '0'}</div>
                     </div>
                     <div className="bg-gray-50 p-4 rounded-lg">
                       <div className="text-sm font-medium text-gray-700">Net Worth</div>
-                      <div className={`${financialSummary?.netWorth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
+                      <div className={`font-numeric ${financialSummary?.netWorth >= 0 ? 'text-green-600' : 'text-red-600'}`}>
                         ${financialSummary?.netWorth?.toLocaleString() || '0'}
                       </div>
                     </div>

@@ -166,7 +166,7 @@ export default function SavingsPlanner() {
                     <CurrencyDollarIcon className="h-6 w-6 text-indigo-600" />
                   </div>
                   <div className="ml-4">
-                    <div className="text-2xl font-bold text-gray-900">
+                    <div className="text-2xl font-bold text-gray-900 font-numeric">
                       ${savingsData?.totalGoalAmount?.toLocaleString() || '0'}
                     </div>
                     <div className="text-sm text-gray-600">Total Goal Amount</div>
@@ -180,7 +180,7 @@ export default function SavingsPlanner() {
                     <CheckCircleIcon className="h-6 w-6 text-green-600" />
                   </div>
                   <div className="ml-4">
-                    <div className="text-2xl font-bold text-gray-900">
+                    <div className="text-2xl font-bold text-gray-900 font-numeric">
                       ${savingsData?.totalSavedAmount?.toLocaleString() || '0'}
                     </div>
                     <div className="text-sm text-gray-600">Current Savings</div>
@@ -194,7 +194,7 @@ export default function SavingsPlanner() {
                     <ChartBarIcon className="h-6 w-6 text-purple-600" />
                   </div>
                   <div className="ml-4">
-                    <div className="text-2xl font-bold text-gray-900">
+                    <div className="text-2xl font-bold text-gray-900 font-numeric">
                       ${goals.reduce((sum, goal) => sum + calculateMonthlyNeeded(goal.goalamount, goal.checkingbalance, goal.deadlinetogoal), 0).toLocaleString()}
                     </div>
                     <div className="text-sm text-gray-600">Monthly Required</div>
@@ -257,11 +257,11 @@ export default function SavingsPlanner() {
                       <div className="grid md:grid-cols-4 gap-4 mb-4">
                         <div>
                           <div className="text-sm text-gray-600">Target Amount</div>
-                          <div className="text-lg font-semibold">${goal.goalamount.toLocaleString()}</div>
+                          <div className="text-lg font-semibold font-numeric">${goal.goalamount.toLocaleString()}</div>
                         </div>
                         <div>
                           <div className="text-sm text-gray-600">Current Amount</div>
-                          <div className="text-lg font-semibold text-green-600">${(goal.checkingbalance || 0).toLocaleString()}</div>
+                          <div className="text-lg font-semibold text-green-600 font-numeric">${(goal.checkingbalance || 0).toLocaleString()}</div>
                         </div>
                         <div>
                           <div className="text-sm text-gray-600">Target Date</div>
@@ -269,7 +269,7 @@ export default function SavingsPlanner() {
                         </div>
                         <div>
                           <div className="text-sm text-gray-600">Monthly Needed</div>
-                          <div className="text-lg font-semibold text-blue-600">${monthlyNeeded.toLocaleString()}</div>
+                          <div className="text-lg font-semibold text-blue-600 font-numeric">${monthlyNeeded.toLocaleString()}</div>
                         </div>
                       </div>
 

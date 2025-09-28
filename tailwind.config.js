@@ -12,7 +12,8 @@ module.exports = {
         foreground: 'var(--foreground)',
       },
       fontFamily: {
-        'sans': ['Bungee', 'cursive'],
+        'sans': ['Raleway', 'sans-serif'],
+        'numeric': ['Nunito Sans', 'sans-serif'],
       },
     },
   },

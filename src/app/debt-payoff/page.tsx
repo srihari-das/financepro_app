@@ -139,25 +139,25 @@ export default function DebtPayoff() {
         {/* Quick Stats */}
         <div className="grid md:grid-cols-4 gap-6 mb-8">
           <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-            <div className="text-3xl font-bold text-red-600 mb-2">
+            <div className="text-3xl font-bold text-red-600 mb-2 font-numeric">
               ${totalDebt.toLocaleString()}
             </div>
             <div className="text-sm text-gray-600">Total Debt</div>
           </div>
           <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-            <div className="text-3xl font-bold text-orange-600 mb-2">
+            <div className="text-3xl font-bold text-orange-600 mb-2 font-numeric">
               ${totalMinimumPayments.toLocaleString()}
             </div>
             <div className="text-sm text-gray-600">Monthly Minimums</div>
           </div>
           <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-            <div className="text-3xl font-bold text-blue-600 mb-2">
+            <div className="text-3xl font-bold text-blue-600 mb-2 font-numeric">
               ${totalInterestIfMinimum.toLocaleString()}
             </div>
             <div className="text-sm text-gray-600">Interest (Min Payments)</div>
           </div>
           <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-            <div className="text-3xl font-bold text-green-600 mb-2">
+            <div className="text-3xl font-bold text-green-600 mb-2 font-numeric">
               ${niceToHaveTotal.toFixed(2)}
             </div>
             <div className="text-sm text-gray-600">Cancelable Subscriptions</div>
@@ -248,19 +248,19 @@ export default function DebtPayoff() {
                       <div className="grid md:grid-cols-4 gap-4 mb-4">
                         <div>
                           <div className="text-sm text-gray-600">Balance</div>
-                          <div className="text-lg font-semibold text-red-600">
+                          <div className="text-lg font-semibold text-red-600 font-numeric">
                             ${debt.balance.toLocaleString()}
                           </div>
                         </div>
                         <div>
                           <div className="text-sm text-gray-600">Minimum Payment</div>
-                          <div className="text-lg font-semibold">
+                          <div className="text-lg font-semibold font-numeric">
                             ${Math.max(25, debt.balance * 0.025).toFixed(0)}
                           </div>
                         </div>
                         <div>
                           <div className="text-sm text-gray-600">Interest Rate</div>
-                          <div className="text-lg font-semibold text-orange-600">
+                          <div className="text-lg font-semibold text-orange-600 font-numeric">
                             {debt.interestrate}%
                           </div>
                         </div>
@@ -330,7 +330,7 @@ export default function DebtPayoff() {
 
               <div className="bg-gradient-to-br from-green-500 to-teal-600 rounded-xl shadow-sm p-6 text-white">
                 <h3 className="text-lg font-semibold mb-2">Debt-Free Goal</h3>
-                <div className="text-3xl font-bold mb-1">2.8 years</div>
+                <div className="text-3xl font-bold mb-1 font-numeric">2.8 years</div>
                 <div className="text-green-100 text-sm">
                   With current minimum payments
                 </div>
@@ -354,19 +354,19 @@ export default function DebtPayoff() {
                 {/* Summary */}
                 <div className="grid md:grid-cols-3 gap-4 mb-8">
                   <div className="bg-blue-50 p-4 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-blue-600">
+                    <div className="text-2xl font-bold text-blue-600 font-numeric">
                       ${((subscriptionData?.totalNeedAmount || 0) + (subscriptionData?.totalNiceAmount || 0)).toFixed(2)}
                     </div>
                     <div className="text-sm text-blue-800">Total Monthly</div>
                   </div>
                   <div className="bg-red-50 p-4 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-red-600">
+                    <div className="text-2xl font-bold text-red-600 font-numeric">
                       ${subscriptionData?.totalNiceAmount?.toFixed(2) || '0.00'}
                     </div>
                     <div className="text-sm text-red-800">Nice to Have</div>
                   </div>
                   <div className="bg-green-50 p-4 rounded-lg text-center">
-                    <div className="text-2xl font-bold text-green-600">
+                    <div className="text-2xl font-bold text-green-600 font-numeric">
                       ${subscriptionData?.totalNeedAmount?.toFixed(2) || '0.00'}
                     </div>
                     <div className="text-sm text-green-800">Need to Have</div>
@@ -391,7 +391,7 @@ export default function DebtPayoff() {
                           <div key={sub.userid} className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
                             <div>
                               <div className="font-medium text-gray-900">{sub.expensename}</div>
-                              <div className="text-sm text-gray-600">${sub.amount}/month</div>
+                              <div className="text-sm text-gray-600 font-numeric">${sub.amount}/month</div>
                             </div>
                             <div className="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
                               Active
@@ -418,7 +418,7 @@ export default function DebtPayoff() {
                           <div key={sub.userid} className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
                             <div>
                               <div className="font-medium text-gray-900">{sub.expensename}</div>
-                              <div className="text-sm text-gray-600">${sub.amount}/month</div>
+                              <div className="text-sm text-gray-600 font-numeric">${sub.amount}/month</div>
                             </div>
                             <div className="flex items-center space-x-3">
                               <div className="px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
@@ -481,11 +481,11 @@ export default function DebtPayoff() {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span>Total Interest Saved:</span>
-                      <span className="font-semibold text-blue-600">$2,847</span>
+                      <span className="font-semibold text-blue-600 font-numeric">$2,847</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Time to Debt Free:</span>
-                      <span className="font-semibold text-blue-600">2.1 years</span>
+                      <span className="font-semibold text-blue-600 font-numeric">2.1 years</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Best For:</span>
@@ -511,11 +511,11 @@ export default function DebtPayoff() {
                   <div className="space-y-2 text-sm">
                     <div className="flex justify-between">
                       <span>Total Interest Saved:</span>
-                      <span className="font-semibold text-green-600">$2,156</span>
+                      <span className="font-semibold text-green-600 font-numeric">$2,156</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Time to Debt Free:</span>
-                      <span className="font-semibold text-green-600">2.3 years</span>
+                      <span className="font-semibold text-green-600 font-numeric">2.3 years</span>
                     </div>
                     <div className="flex justify-between">
                       <span>Best For:</span>

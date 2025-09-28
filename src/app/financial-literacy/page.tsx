@@ -91,19 +91,19 @@ export default function FinancialLiteracyHub() {
         {/* Stats Overview */}
         <div className="grid md:grid-cols-4 gap-6 mb-12">
           <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-            <div className="text-3xl font-bold text-indigo-600 mb-2">{learningModules.length}</div>
+            <div className="text-3xl font-bold text-indigo-600 mb-2 font-numeric">{learningModules.length}</div>
             <div className="text-sm text-gray-600">Learning Modules</div>
           </div>
           <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-            <div className="text-3xl font-bold text-green-600 mb-2">{completedModules}</div>
+            <div className="text-3xl font-bold text-green-600 mb-2 font-numeric">{completedModules}</div>
             <div className="text-sm text-gray-600">Completed</div>
           </div>
           <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-            <div className="text-3xl font-bold text-purple-600 mb-2">{totalMinutesLearned}</div>
+            <div className="text-3xl font-bold text-purple-600 mb-2 font-numeric">{totalMinutesLearned}</div>
             <div className="text-sm text-gray-600">Minutes Learned</div>
           </div>
           <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-            <div className="text-3xl font-bold text-yellow-600 mb-2">{earnedAchievements}</div>
+            <div className="text-3xl font-bold text-yellow-600 mb-2 font-numeric">{earnedAchievements}</div>
             <div className="text-sm text-gray-600">Achievements</div>
           </div>
         </div>
@@ -182,7 +182,7 @@ export default function FinancialLiteracyHub() {
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-gray-600">Overall Progress</span>
-                    <span className="font-medium">{overallProgress}%</span>
+                    <span className="font-medium font-numeric">{overallProgress}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div className="bg-indigo-600 h-2 rounded-full" style={{ width: `${overallProgress}%` }}></div>
@@ -191,7 +191,7 @@ export default function FinancialLiteracyHub() {
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-gray-600">This Week</span>
-                    <span className="font-medium">{totalMinutesLearned} min</span>
+                    <span className="font-medium font-numeric">{totalMinutesLearned} min</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div className="bg-green-600 h-2 rounded-full" style={{ width: `${Math.min(100, (totalMinutesLearned / 50) * 100)}%` }}></div>
