@@ -6,11 +6,16 @@ import { usePathname, useRouter } from 'next/navigation'
 import { createClient } from '@supabase/supabase-js'
 import type { User } from '@supabase/supabase-js'
 
-// Create supabase client
-const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-)
+// Create supabase client with fallbacks
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+
+// Only create supabase client if both URL and key are properly configured
+const supabase = (supabaseUrl && supabaseKey && 
+                 supabaseUrl !== 'your_supabase_url_here' && 
+                 supabaseKey !== 'your_supabase_anon_key_here')
+  ? createClient(supabaseUrl, supabaseKey)
+  : null
 
 const Navigation = () => {
   const [isOpen, setIsOpen] = useState(false)
@@ -20,6 +25,13 @@ const Navigation = () => {
   const router = useRouter()
 
   useEffect(() => {
+    // If supabase is not configured, just set loading to false
+    if (!supabase) {
+      setUser(null)
+      setLoading(false)
+      return
+    }
+
     const getSession = async () => {
       const { data: { session } } = await supabase.auth.getSession()
       setUser(session?.user ?? null)
@@ -61,7 +73,9 @@ const Navigation = () => {
 
   const handleSignOut = async () => {
     try {
-      await supabase.auth.signOut()
+      if (supabase) {
+        await supabase.auth.signOut()
+      }
       setIsOpen(false)
       router.push('/')
     } catch (error) {
