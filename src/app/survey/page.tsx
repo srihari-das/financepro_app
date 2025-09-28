@@ -3,6 +3,8 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import { ChevronRightIcon, ChevronLeftIcon } from '@heroicons/react/24/outline'
+import { supabase, getCurrentUserId } from '@/lib/supabase'
+import { GoalTag, EmploymentStatus } from '@/types/database'
 
 export default function Survey() {
   const [currentStep, setCurrentStep] = useState(0)
@@ -73,10 +75,97 @@ export default function Survey() {
     }
   }
 
-  const handleSubmit = () => {
-    // TODO: Save survey data and redirect to profile or dashboard
-    console.log('Survey completed:', formData)
-    // Redirect to profile page to show results
+  const handleSubmit = async () => {
+    try {
+      const userId = await getCurrentUserId()
+      if (!userId) {
+        alert('Please sign in to save your survey data')
+        return
+      }
+
+      // Map survey data to database fields
+      const accountData = {
+        userid: userId,
+        financialgoal: formData.primaryGoal,
+        timeline: formData.timeHorizon,
+        goalamount: parseFloat(formData.goalAmount.replace(/[$,]/g, '')) || 0,
+        currentsavings: parseSavingsRange(formData.currentSavings),
+        monthlyexpenses: parseFloat(formData.monthlyExpenses.replace(/[$,]/g, '')) || 0,
+        goaltags: mapFinancialPriorities(formData.financialPriorities),
+        age: parseAgeRange(formData.age),
+        employmentstatus: mapEmploymentStatus(formData.employmentStatus),
+        annualincome: parseIncomeRange(formData.annualIncome),
+        checkingbalance: 0 // Default value, user can update later
+      }
+
+      const { error } = await supabase
+        .from('accountdetails')
+        .upsert(accountData, { onConflict: 'userid' })
+
+      if (error) {
+        console.error('Error saving survey data:', error)
+        alert('Failed to save survey data. Please try again.')
+      }
+    } catch (error) {
+      console.error('Survey submission error:', error)
+      alert('An error occurred. Please try again.')
+    }
+  }
+
+  // Helper functions to parse survey data
+  const parseSavingsRange = (range: string): number => {
+    if (range.includes('Less than $1,000')) return 500
+    if (range.includes('$1,000 - $5,000')) return 3000
+    if (range.includes('$5,000 - $10,000')) return 7500
+    if (range.includes('$10,000 - $25,000')) return 17500
+    if (range.includes('$25,000 - $50,000')) return 37500
+    if (range.includes('More than $50,000')) return 75000
+    return 0
+  }
+
+  const parseAgeRange = (range: string): number => {
+    if (range.includes('18-25')) return 22
+    if (range.includes('26-35')) return 30
+    if (range.includes('36-45')) return 40
+    if (range.includes('46-55')) return 50
+    if (range.includes('56-65')) return 60
+    if (range.includes('65+')) return 70
+    return 30
+  }
+
+  const parseIncomeRange = (range: string): number => {
+    if (range.includes('Less than $25,000')) return 20000
+    if (range.includes('$25,000 - $50,000')) return 37500
+    if (range.includes('$50,000 - $75,000')) return 62500
+    if (range.includes('$75,000 - $100,000')) return 87500
+    if (range.includes('$100,000 - $150,000')) return 125000
+    if (range.includes('More than $150,000')) return 200000
+    return 50000
+  }
+
+  const mapEmploymentStatus = (status: string): EmploymentStatus => {
+    if (status.includes('Full-time')) return 'Employed'
+    if (status.includes('Part-time')) return 'Employed'
+    if (status.includes('Self-employed')) return 'SelfEmployed'
+    if (status.includes('Student')) return 'Student'
+    if (status.includes('Retired')) return 'Retired'
+    if (status.includes('Unemployed')) return 'Unemployed'
+    return 'Other'
+  }
+
+  const mapFinancialPriorities = (priorities: string[]): GoalTag[] => {
+    const mapping: { [key: string]: GoalTag } = {
+      'Saving money': 'saving money',
+      'Paying off debt': 'paying off debt',
+      'Learning about investing': 'learning about investing',
+      'Building credit': 'building credit',
+      'Financial education': 'financial education',
+      'Retirement planning': 'retirement planning',
+      'Tax optimization': 'tax optimization',
+      'Insurance planning': 'insurance planning'
+    }
+    
+    return priorities.map(p => mapping[p] || 'financial education' as GoalTag)
   }
 
   const renderStep = () => {
@@ -86,7 +175,7 @@ export default function Survey() {
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                What's your age range?
+                What&apos;s your age range?
               </label>
               <div className="grid grid-cols-2 gap-3">
                 {['18-25', '26-35', '36-45', '46-55', '56-65', '65+'].map((range) => (
@@ -171,7 +260,7 @@ export default function Survey() {
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                What's your primary financial goal?
+                What&apos;s your primary financial goal?
               </label>
               <div className="space-y-2">
                 {[
@@ -202,7 +291,7 @@ export default function Survey() {
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                What's your time horizon for this goal?
+                What&apos;s your time horizon for this goal?
               </label>
               <div className="grid grid-cols-2 gap-3">
                 {[

@@ -12,6 +12,8 @@ import {
   TrashIcon,
   PencilIcon
 } from '@heroicons/react/24/outline'
+import { useDebtInfo, useSubscriptionSummary } from '@/hooks/useFinancialData'
+import { DebtType } from '@/types/database'
 
 export default function DebtPayoff() {
   const [activeTab, setActiveTab] = useState('overview')
@@ -20,118 +22,105 @@ export default function DebtPayoff() {
     balance: '',
     minimumPayment: '',
     interestRate: '',
-    type: 'credit-card'
+    type: 'CreditCard' as DebtType
   })
 
-  // Mock debt data
-  const [debts, setDebts] = useState([
-    {
-      id: 1,
-      name: 'Chase Freedom Credit Card',
-      balance: 3500,
-      minimumPayment: 105,
-      interestRate: 18.99,
-      type: 'credit-card',
-      monthsToPayoff: 42,
-      totalInterest: 1247
-    },
-    {
-      id: 2,
-      name: 'Student Loan - Federal',
-      balance: 15000,
-      minimumPayment: 170,
-      interestRate: 5.5,
-      type: 'student-loan',
-      monthsToPayoff: 120,
-      totalInterest: 5400
-    },
-    {
-      id: 3,
-      name: 'Car Loan - Honda Civic',
-      balance: 8500,
-      minimumPayment: 285,
-      interestRate: 4.2,
-      type: 'auto-loan',
-      monthsToPayoff: 36,
-      totalInterest: 892
-    }
-  ])
+  // Fetch debt and subscription data from database
+  const { data: debtData, loading: debtLoading, error: debtError } = useDebtInfo()
+  const { data: subscriptionData, loading: subscriptionLoading, error: subscriptionError } = useSubscriptionSummary()
 
-  // Mock subscription data  
-  const [subscriptions, setSubscriptions] = useState([
-    { id: 1, name: 'Netflix', amount: 15.99, category: 'nice-to-have', active: true },
-    { id: 2, name: 'Spotify Premium', amount: 9.99, category: 'nice-to-have', active: true },
-    { id: 3, name: 'Internet', amount: 79.99, category: 'need-to-have', active: true },
-    { id: 4, name: 'Phone Plan', amount: 65.00, category: 'need-to-have', active: true },
-    { id: 5, name: 'Gym Membership', amount: 29.99, category: 'nice-to-have', active: false },
-    { id: 6, name: 'Amazon Prime', amount: 14.98, category: 'nice-to-have', active: true },
-    { id: 7, name: 'Health Insurance', amount: 320.00, category: 'need-to-have', active: true }
-  ])
+  // Loading state
+  if (debtLoading || subscriptionLoading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your debt information...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (debtError || subscriptionError) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Error loading debt data</p>
+          <p className="text-gray-600">{debtError || subscriptionError}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  const debts = debtData?.debts || []
 
   const getDebtTypeColor = (type: string) => {
-    switch (type) {
-      case 'credit-card': return 'bg-red-100 text-red-800'
-      case 'student-loan': return 'bg-blue-100 text-blue-800'
-      case 'auto-loan': return 'bg-green-100 text-green-800'
+    switch (type?.toLowerCase()) {
+      case 'creditcard': return 'bg-red-100 text-red-800'
+      case 'studentloan': return 'bg-blue-100 text-blue-800'
+      case 'autoloan': return 'bg-green-100 text-green-800'
       case 'mortgage': return 'bg-purple-100 text-purple-800'
+      case 'personalloan': return 'bg-yellow-100 text-yellow-800'
       default: return 'bg-gray-100 text-gray-800'
     }
   }
 
   const getDebtTypeIcon = (type: string) => {
-    switch (type) {
-      case 'credit-card': return '💳'
-      case 'student-loan': return '🎓'
-      case 'auto-loan': return '🚗'
+    switch (type?.toLowerCase()) {
+      case 'creditcard': return '💳'
+      case 'studentloan': return '🎓'
+      case 'autoloan': return '🚗'
       case 'mortgage': return '🏠'
+      case 'personalloan': return '💰'
       default: return '💰'
     }
   }
 
-  const totalDebt = debts.reduce((sum, debt) => sum + debt.balance, 0)
-  const totalMinimumPayments = debts.reduce((sum, debt) => sum + debt.minimumPayment, 0)
-  const totalInterestIfMinimum = debts.reduce((sum, debt) => sum + debt.totalInterest, 0)
+  const totalDebt = debtData?.totalDebt || 0
+  const totalMinimumPayments = debtData?.totalMinimumPayments || 0
+  
+  // Calculate estimated total interest (simplified calculation)
+  const totalInterestIfMinimum = debts.reduce((sum, debt) => {
+    // Simple interest calculation assuming minimum payments
+    const monthsToPayoff = Math.ceil(debt.balance / (debt.balance * 0.025)) // rough estimate
+    return sum + (debt.balance * (debt.interestrate / 100) * (monthsToPayoff / 12))
+  }, 0)
 
-  const activeSubscriptions = subscriptions.filter(sub => sub.active)
-  const niceToHaveTotal = activeSubscriptions
-    .filter(sub => sub.category === 'nice-to-have')
-    .reduce((sum, sub) => sum + sub.amount, 0)
+  const niceToHaveTotal = subscriptionData?.totalNiceAmount || 0
 
   const handleAddDebt = (e: React.FormEvent) => {
     e.preventDefault()
-    const balance = parseFloat(newDebt.balance)
-    const minPayment = parseFloat(newDebt.minimumPayment)
-    const rate = parseFloat(newDebt.interestRate)
+    // TODO: Implement API call to create new debt in Supabase
+    alert('Debt creation will be implemented with Supabase integration')
     
-    // Simple calculation for months to payoff and total interest
-    const monthsToPayoff = Math.ceil(balance / minPayment)
-    const totalInterest = (minPayment * monthsToPayoff) - balance
-
-    const debt = {
-      id: debts.length + 1,
-      name: newDebt.name,
-      balance,
-      minimumPayment: minPayment,
-      interestRate: rate,
-      type: newDebt.type,
-      monthsToPayoff,
-      totalInterest: Math.max(0, totalInterest)
-    }
-
-    setDebts([...debts, debt])
+    // For now, reset form and switch to overview
     setNewDebt({
       name: '',
       balance: '',
       minimumPayment: '',
       interestRate: '',
-      type: 'credit-card'
+      type: 'CreditCard' as DebtType
     })
+    setActiveTab('overview')
   }
 
-  const toggleSubscription = (id: number) => {
-    setSubscriptions(subscriptions.map(sub => 
-      sub.id === id ? { ...sub, active: !sub.active } : sub
-    ))
+  // Helper function to calculate months to payoff
+  const calculateMonthsToPayoff = (balance: number, interestRate: number) => {
+    const monthlyRate = interestRate / 100 / 12
+    const minPayment = Math.max(25, balance * 0.025) // Minimum 2.5% or $25
+    
+    if (monthlyRate === 0) {
+      return Math.ceil(balance / minPayment)
+    }
+    
+    return Math.ceil(-Math.log(1 - (balance * monthlyRate) / minPayment) / Math.log(1 + monthlyRate))
   }
 
   return (
@@ -215,65 +204,86 @@ export default function DebtPayoff() {
                 </button>
               </div>
 
-              {debts.map((debt) => (
-                <div key={debt.id} className="bg-white rounded-xl shadow-sm p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center space-x-4">
-                      <div className="text-3xl">{getDebtTypeIcon(debt.type)}</div>
-                      <div>
-                        <h3 className="text-lg font-semibold text-gray-900">{debt.name}</h3>
-                        <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getDebtTypeColor(debt.type)}`}>
-                          {debt.type.replace('-', ' ').toUpperCase()}
-                        </span>
-                      </div>
-                    </div>
-                    <div className="flex space-x-2">
-                      <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                        <PencilIcon className="h-4 w-4" />
-                      </button>
-                      <button className="p-2 text-gray-400 hover:text-red-600 transition-colors">
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                    </div>
+              {debts.length === 0 ? (
+                <div className="bg-white rounded-xl shadow-sm p-12 text-center col-span-2">
+                  <div className="text-gray-400 mb-4">
+                    <CreditCardIcon className="h-16 w-16 mx-auto" />
                   </div>
-
-                  <div className="grid md:grid-cols-4 gap-4 mb-4">
-                    <div>
-                      <div className="text-sm text-gray-600">Balance</div>
-                      <div className="text-lg font-semibold text-red-600">
-                        ${debt.balance.toLocaleString()}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600">Minimum Payment</div>
-                      <div className="text-lg font-semibold">
-                        ${debt.minimumPayment}
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600">Interest Rate</div>
-                      <div className="text-lg font-semibold text-orange-600">
-                        {debt.interestRate}%
-                      </div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600">Payoff Time</div>
-                      <div className="text-lg font-semibold">
-                        {Math.floor(debt.monthsToPayoff / 12)}y {debt.monthsToPayoff % 12}m
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-3">
-                    <div className="flex items-center">
-                      <ExclamationTriangleIcon className="h-5 w-5 text-red-600 mr-2" />
-                      <div className="text-sm text-red-700">
-                        At minimum payments, you'll pay <strong>${debt.totalInterest.toLocaleString()}</strong> in interest
-                      </div>
-                    </div>
-                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No debts tracked</h3>
+                  <p className="text-gray-600 mb-6">Add your debts to create a personalized payoff strategy.</p>
+                  <button
+                    onClick={() => setActiveTab('add-debt')}
+                    className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 font-medium transition-colors"
+                  >
+                    Add Your First Debt
+                  </button>
                 </div>
-              ))}
+              ) : (
+                debts.map((debt) => {
+                  const monthsToPayoff = calculateMonthsToPayoff(debt.balance, debt.interestrate)
+                  const estimatedInterest = debt.balance * (debt.interestrate / 100) * (monthsToPayoff / 12)
+                  
+                  return (
+                    <div key={debt.userid} className="bg-white rounded-xl shadow-sm p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center space-x-4">
+                          <div className="text-3xl">{getDebtTypeIcon(debt.debttype)}</div>
+                          <div>
+                            <h3 className="text-lg font-semibold text-gray-900">{debt.debttype} Debt</h3>
+                            <span className={`inline-block px-2 py-1 rounded-full text-xs font-medium ${getDebtTypeColor(debt.debttype)}`}>
+                              {debt.debttype.replace(/([A-Z])/g, ' $1').trim().toUpperCase()}
+                            </span>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                            <PencilIcon className="h-4 w-4" />
+                          </button>
+                          <button className="p-2 text-gray-400 hover:text-red-600 transition-colors">
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="grid md:grid-cols-4 gap-4 mb-4">
+                        <div>
+                          <div className="text-sm text-gray-600">Balance</div>
+                          <div className="text-lg font-semibold text-red-600">
+                            ${debt.balance.toLocaleString()}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-sm text-gray-600">Minimum Payment</div>
+                          <div className="text-lg font-semibold">
+                            ${Math.max(25, debt.balance * 0.025).toFixed(0)}
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-sm text-gray-600">Interest Rate</div>
+                          <div className="text-lg font-semibold text-orange-600">
+                            {debt.interestrate}%
+                          </div>
+                        </div>
+                        <div>
+                          <div className="text-sm text-gray-600">Payoff Time</div>
+                          <div className="text-lg font-semibold">
+                            {Math.floor(monthsToPayoff / 12)}y {monthsToPayoff % 12}m
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                        <div className="flex items-center">
+                          <ExclamationTriangleIcon className="h-5 w-5 text-red-600 mr-2" />
+                          <div className="text-sm text-red-700">
+                            At minimum payments, you&apos;ll pay <strong>${estimatedInterest.toFixed(0).toLocaleString()}</strong> in interest
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )
+                })
+              )}
             </div>
 
             {/* Debt Visualization */}
@@ -284,20 +294,26 @@ export default function DebtPayoff() {
                   Debt Breakdown
                 </h3>
                 <div className="space-y-3">
-                  {debts.map((debt) => {
-                    const percentage = ((debt.balance / totalDebt) * 100).toFixed(1)
-                    return (
-                      <div key={debt.id} className="flex items-center justify-between">
-                        <div className="flex items-center space-x-2">
-                          <div className="text-sm">{getDebtTypeIcon(debt.type)}</div>
-                          <div className="text-sm font-medium text-gray-700 truncate">
-                            {debt.name}
+                  {debts.length === 0 ? (
+                    <div className="text-center text-gray-500 py-8">
+                      <p>No debts to display</p>
+                    </div>
+                  ) : (
+                    debts.map((debt) => {
+                      const percentage = totalDebt > 0 ? ((debt.balance / totalDebt) * 100).toFixed(1) : '0'
+                      return (
+                        <div key={debt.userid} className="flex items-center justify-between">
+                          <div className="flex items-center space-x-2">
+                            <div className="text-sm">{getDebtTypeIcon(debt.debttype)}</div>
+                            <div className="text-sm font-medium text-gray-700 truncate">
+                              {debt.debttype} Debt
+                            </div>
                           </div>
+                          <div className="text-sm font-semibold">{percentage}%</div>
                         </div>
-                        <div className="text-sm font-semibold">{percentage}%</div>
-                      </div>
-                    )
-                  })}
+                      )
+                    })
+                  )}
                 </div>
               </div>
 
@@ -339,21 +355,19 @@ export default function DebtPayoff() {
                 <div className="grid md:grid-cols-3 gap-4 mb-8">
                   <div className="bg-blue-50 p-4 rounded-lg text-center">
                     <div className="text-2xl font-bold text-blue-600">
-                      ${activeSubscriptions.reduce((sum, sub) => sum + sub.amount, 0).toFixed(2)}
+                      ${((subscriptionData?.totalNeedAmount || 0) + (subscriptionData?.totalNiceAmount || 0)).toFixed(2)}
                     </div>
                     <div className="text-sm text-blue-800">Total Monthly</div>
                   </div>
                   <div className="bg-red-50 p-4 rounded-lg text-center">
                     <div className="text-2xl font-bold text-red-600">
-                      ${niceToHaveTotal.toFixed(2)}
+                      ${subscriptionData?.totalNiceAmount?.toFixed(2) || '0.00'}
                     </div>
                     <div className="text-sm text-red-800">Nice to Have</div>
                   </div>
                   <div className="bg-green-50 p-4 rounded-lg text-center">
                     <div className="text-2xl font-bold text-green-600">
-                      ${activeSubscriptions
-                        .filter(sub => sub.category === 'need-to-have')
-                        .reduce((sum, sub) => sum + sub.amount, 0).toFixed(2)}
+                      ${subscriptionData?.totalNeedAmount?.toFixed(2) || '0.00'}
                     </div>
                     <div className="text-sm text-green-800">Need to Have</div>
                   </div>
@@ -368,21 +382,23 @@ export default function DebtPayoff() {
                       Need to Have
                     </h3>
                     <div className="space-y-3">
-                      {subscriptions
-                        .filter(sub => sub.category === 'need-to-have')
-                        .map((sub) => (
-                          <div key={sub.id} className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
+                      {subscriptionData?.needSubscriptions?.length === 0 ? (
+                        <div className="text-center text-gray-500 py-8">
+                          <p>No essential subscriptions found</p>
+                        </div>
+                      ) : (
+                        subscriptionData?.needSubscriptions?.map((sub) => (
+                          <div key={sub.userid} className="flex items-center justify-between p-4 bg-green-50 rounded-lg">
                             <div>
-                              <div className="font-medium text-gray-900">{sub.name}</div>
+                              <div className="font-medium text-gray-900">{sub.expensename}</div>
                               <div className="text-sm text-gray-600">${sub.amount}/month</div>
                             </div>
-                            <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-                              sub.active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                            }`}>
-                              {sub.active ? 'Active' : 'Canceled'}
+                            <div className="px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
+                              Active
                             </div>
                           </div>
-                        ))}
+                        )) || []
+                      )}
                     </div>
                   </div>
 
@@ -393,33 +409,28 @@ export default function DebtPayoff() {
                       Nice to Have
                     </h3>
                     <div className="space-y-3">
-                      {subscriptions
-                        .filter(sub => sub.category === 'nice-to-have')
-                        .map((sub) => (
-                          <div key={sub.id} className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
+                      {subscriptionData?.niceSubscriptions?.length === 0 ? (
+                        <div className="text-center text-gray-500 py-8">
+                          <p>No optional subscriptions found</p>
+                        </div>
+                      ) : (
+                        subscriptionData?.niceSubscriptions?.map((sub) => (
+                          <div key={sub.userid} className="flex items-center justify-between p-4 bg-red-50 rounded-lg">
                             <div>
-                              <div className="font-medium text-gray-900">{sub.name}</div>
+                              <div className="font-medium text-gray-900">{sub.expensename}</div>
                               <div className="text-sm text-gray-600">${sub.amount}/month</div>
                             </div>
                             <div className="flex items-center space-x-3">
-                              <div className={`px-3 py-1 rounded-full text-sm font-medium ${
-                                sub.active ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'
-                              }`}>
-                                {sub.active ? 'Active' : 'Canceled'}
+                              <div className="px-3 py-1 rounded-full text-sm font-medium bg-red-100 text-red-800">
+                                Active
                               </div>
-                              <button
-                                onClick={() => toggleSubscription(sub.id)}
-                                className={`px-3 py-1 rounded-lg text-sm font-medium transition-colors ${
-                                  sub.active
-                                    ? 'bg-red-600 text-white hover:bg-red-700'
-                                    : 'bg-green-600 text-white hover:bg-green-700'
-                                }`}
-                              >
-                                {sub.active ? 'Cancel' : 'Reactivate'}
-                              </button>
+                              <div className="text-sm text-gray-600">
+                                Consider canceling to free up funds
+                              </div>
                             </div>
                           </div>
-                        ))}
+                        )) || []
+                      )}
                     </div>
                   </div>
                 </div>
@@ -429,7 +440,7 @@ export default function DebtPayoff() {
                   <div className="mt-8 bg-indigo-50 border border-indigo-200 rounded-lg p-6">
                     <h4 className="text-lg font-semibold text-indigo-900 mb-2">💰 Potential Savings</h4>
                     <p className="text-indigo-700 mb-4">
-                      By canceling "nice to have" subscriptions, you could free up{' '}
+                      By canceling &quot;nice to have&quot; subscriptions, you could free up{' '}
                       <strong>${niceToHaveTotal.toFixed(2)}/month</strong> (${(niceToHaveTotal * 12).toFixed(2)}/year) 
                       to put toward debt payments.
                     </p>
@@ -625,12 +636,12 @@ export default function DebtPayoff() {
                       value={newDebt.type}
                       onChange={(e) => setNewDebt({ ...newDebt, type: e.target.value })}
                     >
-                      <option value="credit-card">Credit Card</option>
-                      <option value="student-loan">Student Loan</option>
-                      <option value="auto-loan">Auto Loan</option>
-                      <option value="mortgage">Mortgage</option>
-                      <option value="personal-loan">Personal Loan</option>
-                      <option value="other">Other</option>
+                      <option value="CreditCard">Credit Card</option>
+                      <option value="StudentLoan">Student Loan</option>
+                      <option value="AutoLoan">Auto Loan</option>
+                      <option value="Mortgage">Mortgage</option>
+                      <option value="PersonalLoan">Personal Loan</option>
+                      <option value="Other">Other</option>
                     </select>
                   </div>
                 </div>

@@ -14,6 +14,14 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
+      <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link 
+          href="https://fonts.googleapis.com/css2?family=Bungee&display=swap" 
+          rel="stylesheet" 
+        />
+      </head>
       <body className="min-h-screen bg-gray-50">
         <Navigation />
         <main className="pt-16">

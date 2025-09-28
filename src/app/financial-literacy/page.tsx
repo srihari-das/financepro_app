@@ -66,6 +66,14 @@ export default function FinancialLiteracyHub() {
     { title: 'Debt Crusher', earned: false }
   ]
 
+  // Calculate dynamic stats
+  const completedModules = learningModules.filter(module => module.completed).length
+  const totalMinutesLearned = learningModules
+    .filter(module => module.completed)
+    .reduce((total, module) => total + parseInt(module.duration), 0)
+  const earnedAchievements = achievements.filter(achievement => achievement.earned).length
+  const overallProgress = Math.round((completedModules / learningModules.length) * 100)
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -83,19 +91,19 @@ export default function FinancialLiteracyHub() {
         {/* Stats Overview */}
         <div className="grid md:grid-cols-4 gap-6 mb-12">
           <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-            <div className="text-3xl font-bold text-indigo-600 mb-2">6</div>
+            <div className="text-3xl font-bold text-indigo-600 mb-2">{learningModules.length}</div>
             <div className="text-sm text-gray-600">Learning Modules</div>
           </div>
           <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-            <div className="text-3xl font-bold text-green-600 mb-2">2</div>
+            <div className="text-3xl font-bold text-green-600 mb-2">{completedModules}</div>
             <div className="text-sm text-gray-600">Completed</div>
           </div>
           <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-            <div className="text-3xl font-bold text-purple-600 mb-2">27</div>
+            <div className="text-3xl font-bold text-purple-600 mb-2">{totalMinutesLearned}</div>
             <div className="text-sm text-gray-600">Minutes Learned</div>
           </div>
           <div className="bg-white rounded-xl shadow-sm p-6 text-center">
-            <div className="text-3xl font-bold text-yellow-600 mb-2">1</div>
+            <div className="text-3xl font-bold text-yellow-600 mb-2">{earnedAchievements}</div>
             <div className="text-sm text-gray-600">Achievements</div>
           </div>
         </div>
@@ -174,19 +182,19 @@ export default function FinancialLiteracyHub() {
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-gray-600">Overall Progress</span>
-                    <span className="font-medium">33%</span>
+                    <span className="font-medium">{overallProgress}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-indigo-600 h-2 rounded-full" style={{ width: '33%' }}></div>
+                    <div className="bg-indigo-600 h-2 rounded-full" style={{ width: `${overallProgress}%` }}></div>
                   </div>
                 </div>
                 <div>
                   <div className="flex justify-between text-sm mb-2">
                     <span className="text-gray-600">This Week</span>
-                    <span className="font-medium">27 min</span>
+                    <span className="font-medium">{totalMinutesLearned} min</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div className="bg-green-600 h-2 rounded-full" style={{ width: '54%' }}></div>
+                    <div className="bg-green-600 h-2 rounded-full" style={{ width: `${Math.min(100, (totalMinutesLearned / 50) * 100)}%` }}></div>
                   </div>
                   <div className="text-xs text-gray-500 mt-1">Goal: 50 min/week</div>
                 </div>

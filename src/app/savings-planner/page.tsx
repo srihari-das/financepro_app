@@ -3,64 +3,60 @@
 import { useState } from 'react'
 import { 
   CurrencyDollarIcon,
-  CalendarIcon,
   ChartBarIcon,
   PlusIcon,
   TrashIcon,
   PencilIcon,
   CheckCircleIcon
 } from '@heroicons/react/24/outline'
+import { useSavingsGoals } from '@/hooks/useFinancialData'
+import { GoalCategory } from '@/types/database'
 
 export default function SavingsPlanner() {
-  const [activeTab, setActiveTab] = useState('create')
+  const [activeTab, setActiveTab] = useState('overview')
   const [newGoal, setNewGoal] = useState({
     name: '',
     targetAmount: '',
     currentAmount: '',
     targetDate: '',
-    priority: 'medium',
-    category: 'general'
+    priority: 'Med' as 'High' | 'Med' | 'Low',
+    category: 'Other' as GoalCategory
   })
 
-  // Mock existing goals
-  const [goals, setGoals] = useState([
-    {
-      id: 1,
-      name: 'Emergency Fund',
-      targetAmount: 15000,
-      currentAmount: 7500,
-      targetDate: '2025-12-31',
-      priority: 'high',
-      category: 'emergency',
-      monthlyContribution: 500,
-      progress: 50,
-      onTrack: true
-    },
-    {
-      id: 2,
-      name: 'House Down Payment',
-      targetAmount: 50000,
-      currentAmount: 12000,
-      targetDate: '2026-06-30',
-      priority: 'high',
-      category: 'home',
-      monthlyContribution: 1200,
-      progress: 24,
-      onTrack: false
-    },
-    {
-      id: 3,
-      name: 'Vacation to Europe',
-      targetAmount: 5000,
-      currentAmount: 1200,
-      targetDate: '2025-07-15',
-      priority: 'low',
-      category: 'travel',
-      monthlyContribution: 400,
-      progress: 24,
-      onTrack: true
-    }
-  ])
+  // Fetch savings goals from database
+  const { data: savingsData, loading, error } = useSavingsGoals()
+
+  // Loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading your savings goals...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8 flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-red-600 mb-4">Error loading savings data</p>
+          <p className="text-gray-600">{error}</p>
+          <button 
+            onClick={() => window.location.reload()} 
+            className="mt-4 bg-indigo-600 text-white px-4 py-2 rounded-lg hover:bg-indigo-700"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
+
+  const goals = savingsData?.goals || []
 
   const calculateMonthlyNeeded = (target: number, current: number, targetDate: string) => {
     const remaining = target - current
@@ -70,9 +66,24 @@ export default function SavingsPlanner() {
     return Math.ceil(remaining / monthsRemaining)
   }
 
+  const calculateProgress = (current: number, target: number) => {
+    if (target === 0) return 0
+    return Math.round((current / target) * 100)
+  }
+
+  const isOnTrack = (current: number, target: number, targetDate: string) => {
+    const progress = calculateProgress(current, target)
+    const today = new Date()
+    const endDate = new Date(targetDate)
+    const totalDays = Math.max(1, Math.ceil((endDate.getTime() - today.getTime()) / (1000 * 3600 * 24)))
+    const expectedProgress = Math.max(0, 100 - (totalDays / 365) * 100) // Rough calculation
+    return progress >= expectedProgress
+  }
+
   const getPriorityColor = (priority: string) => {
-    switch (priority) {
+    switch (priority?.toLowerCase()) {
       case 'high': return 'text-red-600 bg-red-100'
+      case 'med': 
       case 'medium': return 'text-yellow-600 bg-yellow-100'
       case 'low': return 'text-green-600 bg-green-100'
       default: return 'text-gray-600 bg-gray-100'
@@ -80,43 +91,30 @@ export default function SavingsPlanner() {
   }
 
   const getCategoryIcon = (category: string) => {
-    switch (category) {
-      case 'emergency': return '🛡️'
-      case 'home': return '🏠'
-      case 'travel': return '✈️'
+    switch (category?.toLowerCase()) {
+      case 'emergencyfund': return '🛡️'
+      case 'vacation': return '✈️'
       case 'education': return '🎓'
-      case 'investment': return '📈'
+      case 'retirement': return '🏦'
+      case 'largepurchase': return '🛒'
+      case 'other': 
       default: return '🎯'
     }
   }
 
   const handleCreateGoal = (e: React.FormEvent) => {
     e.preventDefault()
-    const target = parseFloat(newGoal.targetAmount)
-    const current = parseFloat(newGoal.currentAmount) || 0
-    const monthlyNeeded = calculateMonthlyNeeded(target, current, newGoal.targetDate)
+    // TODO: Implement API call to create new goal in Supabase
+    alert('Goal creation will be implemented with Supabase integration')
     
-    const goal = {
-      id: goals.length + 1,
-      name: newGoal.name,
-      targetAmount: target,
-      currentAmount: current,
-      targetDate: newGoal.targetDate,
-      priority: newGoal.priority,
-      category: newGoal.category,
-      monthlyContribution: monthlyNeeded,
-      progress: Math.round((current / target) * 100),
-      onTrack: true
-    }
-    
-    setGoals([...goals, goal])
+    // For now, reset form and switch to overview
     setNewGoal({
       name: '',
       targetAmount: '',
       currentAmount: '',
       targetDate: '',
-      priority: 'medium',
-      category: 'general'
+      priority: 'Med' as 'High' | 'Med' | 'Low',
+      category: 'Other' as GoalCategory
     })
     setActiveTab('overview')
   }
@@ -169,7 +167,7 @@ export default function SavingsPlanner() {
                   </div>
                   <div className="ml-4">
                     <div className="text-2xl font-bold text-gray-900">
-                      ${goals.reduce((sum, goal) => sum + goal.targetAmount, 0).toLocaleString()}
+                      ${savingsData?.totalGoalAmount?.toLocaleString() || '0'}
                     </div>
                     <div className="text-sm text-gray-600">Total Goal Amount</div>
                   </div>
@@ -183,7 +181,7 @@ export default function SavingsPlanner() {
                   </div>
                   <div className="ml-4">
                     <div className="text-2xl font-bold text-gray-900">
-                      ${goals.reduce((sum, goal) => sum + goal.currentAmount, 0).toLocaleString()}
+                      ${savingsData?.totalSavedAmount?.toLocaleString() || '0'}
                     </div>
                     <div className="text-sm text-gray-600">Current Savings</div>
                   </div>
@@ -197,7 +195,7 @@ export default function SavingsPlanner() {
                   </div>
                   <div className="ml-4">
                     <div className="text-2xl font-bold text-gray-900">
-                      ${goals.reduce((sum, goal) => sum + goal.monthlyContribution, 0).toLocaleString()}
+                      ${goals.reduce((sum, goal) => sum + calculateMonthlyNeeded(goal.goalamount, goal.checkingbalance, goal.deadlinetogoal), 0).toLocaleString()}
                     </div>
                     <div className="text-sm text-gray-600">Monthly Required</div>
                   </div>
@@ -207,70 +205,92 @@ export default function SavingsPlanner() {
 
             {/* Goals List */}
             <div className="space-y-4">
-              {goals.map((goal) => (
-                <div key={goal.id} className="bg-white rounded-xl shadow-sm p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center space-x-4">
-                      <div className="text-3xl">{getCategoryIcon(goal.category)}</div>
-                      <div>
-                        <h3 className="text-xl font-semibold text-gray-900">{goal.name}</h3>
-                        <div className="flex items-center space-x-2 mt-1">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(goal.priority)}`}>
-                            {goal.priority.toUpperCase()} PRIORITY
-                          </span>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            goal.onTrack ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                          }`}>
-                            {goal.onTrack ? 'ON TRACK' : 'BEHIND'}
-                          </span>
+              {goals.length === 0 ? (
+                <div className="bg-white rounded-xl shadow-sm p-12 text-center">
+                  <div className="text-gray-400 mb-4">
+                    <CurrencyDollarIcon className="h-16 w-16 mx-auto" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-900 mb-2">No savings goals yet</h3>
+                  <p className="text-gray-600 mb-6">Create your first savings goal to start planning your financial future.</p>
+                  <button
+                    onClick={() => setActiveTab('create')}
+                    className="bg-indigo-600 text-white px-6 py-3 rounded-lg hover:bg-indigo-700 font-medium transition-colors"
+                  >
+                    Create Your First Goal
+                  </button>
+                </div>
+              ) : (
+                goals.map((goal) => {
+                  const progress = calculateProgress(goal.checkingbalance || 0, goal.goalamount || 0)
+                  const onTrack = isOnTrack(goal.checkingbalance || 0, goal.goalamount || 0, goal.deadlinetogoal)
+                  const monthlyNeeded = calculateMonthlyNeeded(goal.goalamount || 0, goal.checkingbalance || 0, goal.deadlinetogoal)
+                  
+                  return (
+                    <div key={goal.userid} className="bg-white rounded-xl shadow-sm p-6">
+                      <div className="flex items-start justify-between mb-4">
+                        <div className="flex items-center space-x-4">
+                          <div className="text-3xl">{getCategoryIcon(goal.goalcategory)}</div>
+                          <div>
+                            <h3 className="text-xl font-semibold text-gray-900">{goal.goalcategory}</h3>
+                            <div className="flex items-center space-x-2 mt-1">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${getPriorityColor(goal.prioritylevel)}`}>
+                                {goal.prioritylevel?.toUpperCase()} PRIORITY
+                              </span>
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                onTrack ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                              }`}>
+                                {onTrack ? 'ON TRACK' : 'BEHIND'}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex space-x-2">
+                          <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
+                            <PencilIcon className="h-4 w-4" />
+                          </button>
+                          <button className="p-2 text-gray-400 hover:text-red-600 transition-colors">
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      </div>
+
+                      <div className="grid md:grid-cols-4 gap-4 mb-4">
+                        <div>
+                          <div className="text-sm text-gray-600">Target Amount</div>
+                          <div className="text-lg font-semibold">${goal.goalamount.toLocaleString()}</div>
+                        </div>
+                        <div>
+                          <div className="text-sm text-gray-600">Current Amount</div>
+                          <div className="text-lg font-semibold text-green-600">${(goal.checkingbalance || 0).toLocaleString()}</div>
+                        </div>
+                        <div>
+                          <div className="text-sm text-gray-600">Target Date</div>
+                          <div className="text-lg font-semibold">{new Date(goal.deadlinetogoal).toLocaleDateString()}</div>
+                        </div>
+                        <div>
+                          <div className="text-sm text-gray-600">Monthly Needed</div>
+                          <div className="text-lg font-semibold text-blue-600">${monthlyNeeded.toLocaleString()}</div>
+                        </div>
+                      </div>
+
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-600">Progress</span>
+                          <span className="font-medium">{progress}% Complete</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className={`h-2 rounded-full transition-all duration-300 ${
+                              onTrack ? 'bg-green-500' : 'bg-red-500'
+                            }`}
+                            style={{ width: `${progress}%` }}
+                          />
                         </div>
                       </div>
                     </div>
-                    <div className="flex space-x-2">
-                      <button className="p-2 text-gray-400 hover:text-gray-600 transition-colors">
-                        <PencilIcon className="h-4 w-4" />
-                      </button>
-                      <button className="p-2 text-gray-400 hover:text-red-600 transition-colors">
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                  </div>
-
-                  <div className="grid md:grid-cols-4 gap-4 mb-4">
-                    <div>
-                      <div className="text-sm text-gray-600">Target Amount</div>
-                      <div className="text-lg font-semibold">${goal.targetAmount.toLocaleString()}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600">Current Amount</div>
-                      <div className="text-lg font-semibold text-green-600">${goal.currentAmount.toLocaleString()}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600">Target Date</div>
-                      <div className="text-lg font-semibold">{new Date(goal.targetDate).toLocaleDateString()}</div>
-                    </div>
-                    <div>
-                      <div className="text-sm text-gray-600">Monthly Needed</div>
-                      <div className="text-lg font-semibold text-blue-600">${goal.monthlyContribution.toLocaleString()}</div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Progress</span>
-                      <span className="font-medium">{goal.progress}% Complete</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2">
-                      <div
-                        className={`h-2 rounded-full transition-all duration-300 ${
-                          goal.onTrack ? 'bg-green-500' : 'bg-red-500'
-                        }`}
-                        style={{ width: `${goal.progress}%` }}
-                      />
-                    </div>
-                  </div>
-                </div>
-              ))}
+                  )
+                })
+              )}
             </div>
 
             <button
@@ -288,7 +308,7 @@ export default function SavingsPlanner() {
             <div className="bg-white rounded-xl shadow-sm p-8">
               <div className="text-center mb-8">
                 <h2 className="text-2xl font-bold text-gray-900 mb-2">Create New Savings Goal</h2>
-                <p className="text-gray-600">Define your goal and we'll create a personalized savings plan</p>
+                <p className="text-gray-600">Define your goal and we&apos;ll create a personalized savings plan</p>
               </div>
 
               <form onSubmit={handleCreateGoal} className="space-y-6">
@@ -356,11 +376,11 @@ export default function SavingsPlanner() {
                     <select
                       className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-indigo-500 focus:border-indigo-500"
                       value={newGoal.priority}
-                      onChange={(e) => setNewGoal({ ...newGoal, priority: e.target.value })}
+                      onChange={(e) => setNewGoal({ ...newGoal, priority: e.target.value as 'High' | 'Med' | 'Low' })}
                     >
-                      <option value="high">High Priority</option>
-                      <option value="medium">Medium Priority</option>
-                      <option value="low">Low Priority</option>
+                      <option value="High">High Priority</option>
+                      <option value="Med">Medium Priority</option>
+                      <option value="Low">Low Priority</option>
                     </select>
                   </div>
 
@@ -373,12 +393,12 @@ export default function SavingsPlanner() {
                       value={newGoal.category}
                       onChange={(e) => setNewGoal({ ...newGoal, category: e.target.value })}
                     >
-                      <option value="emergency">Emergency Fund</option>
-                      <option value="home">Home & Real Estate</option>
-                      <option value="travel">Travel & Vacation</option>
-                      <option value="education">Education</option>
-                      <option value="investment">Investment</option>
-                      <option value="general">General Savings</option>
+                      <option value="EmergencyFund">Emergency Fund</option>
+                      <option value="Vacation">Vacation</option>
+                      <option value="Education">Education</option>
+                      <option value="Retirement">Retirement</option>
+                      <option value="LargePurchase">Large Purchase</option>
+                      <option value="Other">Other</option>
                     </select>
                   </div>
                 </div>
@@ -388,7 +408,7 @@ export default function SavingsPlanner() {
                     <h4 className="text-sm font-medium text-indigo-900 mb-2">Savings Projection</h4>
                     <div className="text-sm text-indigo-700">
                       To reach your goal of ${parseFloat(newGoal.targetAmount).toLocaleString()} by{' '}
-                      {new Date(newGoal.targetDate).toLocaleDateString()}, you'll need to save approximately{' '}
+                      {new Date(newGoal.targetDate).toLocaleDateString()}, you&apos;ll need to save approximately{' '}
                       <span className="font-semibold">
                         ${calculateMonthlyNeeded(
                           parseFloat(newGoal.targetAmount),
@@ -439,25 +459,34 @@ export default function SavingsPlanner() {
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Goal Breakdown</h3>
               <div className="space-y-4">
-                {goals.map((goal) => (
-                  <div key={goal.id} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                    <div className="flex items-center space-x-3">
-                      <div className="text-xl">{getCategoryIcon(goal.category)}</div>
-                      <div>
-                        <div className="font-medium text-gray-900">{goal.name}</div>
-                        <div className="text-sm text-gray-600">{goal.progress}% complete</div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-semibold text-gray-900">
-                        ${goal.currentAmount.toLocaleString()}
-                      </div>
-                      <div className="text-sm text-gray-600">
-                        of ${goal.targetAmount.toLocaleString()}
-                      </div>
-                    </div>
+                {goals.length === 0 ? (
+                  <div className="text-center text-gray-500 py-8">
+                    <p>No savings goals to display</p>
                   </div>
-                ))}
+                ) : (
+                  goals.map((goal) => {
+                    const progress = calculateProgress(goal.checkingbalance || 0, goal.goalamount || 0)
+                    return (
+                      <div key={goal.userid} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                        <div className="flex items-center space-x-3">
+                          <div className="text-xl">{getCategoryIcon(goal.goalcategory)}</div>
+                          <div>
+                            <div className="font-medium text-gray-900">{goal.goalcategory}</div>
+                            <div className="text-sm text-gray-600">{progress}% complete</div>
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <div className="font-semibold text-gray-900">
+                            ${(goal.checkingbalance || 0).toLocaleString()}
+                          </div>
+                          <div className="text-sm text-gray-600">
+                            of ${(goal.goalamount || 0).toLocaleString()}
+                          </div>
+                        </div>
+                      </div>
+                    )
+                  })
+                )}
               </div>
             </div>
 
@@ -465,18 +494,29 @@ export default function SavingsPlanner() {
             <div className="bg-white rounded-xl shadow-sm p-6">
               <h3 className="text-lg font-semibold text-gray-900 mb-4">Monthly Commitment</h3>
               <div className="space-y-3">
-                {goals.map((goal) => (
-                  <div key={goal.id} className="flex justify-between items-center">
-                    <span className="text-gray-700">{goal.name}</span>
-                    <span className="font-semibold">${goal.monthlyContribution.toLocaleString()}</span>
+                {goals.length === 0 ? (
+                  <div className="text-center text-gray-500 py-8">
+                    <p>No savings goals to display</p>
                   </div>
-                ))}
-                <div className="border-t pt-3 flex justify-between items-center font-semibold text-lg">
-                  <span>Total Monthly</span>
-                  <span className="text-indigo-600">
-                    ${goals.reduce((sum, goal) => sum + goal.monthlyContribution, 0).toLocaleString()}
-                  </span>
-                </div>
+                ) : (
+                  <>
+                    {goals.map((goal) => {
+                      const monthlyNeeded = calculateMonthlyNeeded(goal.goalamount || 0, goal.checkingbalance || 0, goal.deadlinetogoal)
+                      return (
+                        <div key={goal.userid} className="flex justify-between items-center">
+                          <span className="text-gray-700">{goal.goalcategory}</span>
+                          <span className="font-semibold">${monthlyNeeded.toLocaleString()}</span>
+                        </div>
+                      )
+                    })}
+                    <div className="border-t pt-3 flex justify-between items-center font-semibold text-lg">
+                      <span>Total Monthly</span>
+                      <span className="text-indigo-600">
+                        ${goals.reduce((sum, goal) => sum + calculateMonthlyNeeded(goal.goalamount || 0, goal.checkingbalance || 0, goal.deadlinetogoal), 0).toLocaleString()}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
             </div>
 
@@ -494,7 +534,7 @@ export default function SavingsPlanner() {
                 </div>
                 <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
                   <div className="text-sm font-medium text-green-900">Vacation Goal on Track</div>
-                  <div className="text-sm text-green-700">Great job! You're on pace to reach your vacation goal.</div>
+                  <div className="text-sm text-green-700">Great job! You&apos;re on pace to reach your vacation goal.</div>
                 </div>
               </div>
             </div>
