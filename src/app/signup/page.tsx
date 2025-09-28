@@ -164,7 +164,7 @@ export default function SignUp() {
             Create Your Account
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Join Capital Compass and start your financial journey
+            Join FinancePro and start your financial journey
           </p>
         </div>
       </div>

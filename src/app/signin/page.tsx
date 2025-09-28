@@ -146,7 +146,7 @@ export default function SignIn() {
             Welcome Back
           </h2>
           <p className="mt-2 text-sm text-gray-600">
-            Sign in to your Capital Compass account
+            Sign in to your FinancePro account
           </p>
         </div>
       </div>

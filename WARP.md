@@ -1,7 +1,7 @@
-# WARP.md - Capital Compass Project Context
+# WARP.md - FinancePro Project Context
 
 ## 1. Project Overview
-- **Project Name:** financepro_app (now branded as "Capital Compass")
+- **Project Name:** financepro_app (branded as "FinancePro")
 - **Description:** A modern, comprehensive financial planning web application built using Next.js
 - The app aids users with budgeting, debt management, financial literacy, savings planning, subscription management, and financial goal tracking
 - The project leverages React, TypeScript, Next.js (v15.5.4), Tailwind CSS, and Supabase for the backend
@@ -77,7 +77,7 @@ Key tables include:
 ## 9. Development Notes from Conversation
 - Multiple patches have been applied to fix type safety issues, font application, and code quality
 - The user desired a more professional and readable numeric font, implemented via Nunito Sans for numbers
-- App has been rebranded from "FinancePro" to "Capital Compass"
+- App is branded as "FinancePro"
 - User environment is Windows 10+, uses pwsh terminal
 - OpenAI API key management recommended strictly on server side via `.env.local`
 - All mock data has been replaced with live Supabase integration
@@ -111,4 +111,4 @@ OPENAI_API_KEY=your_openai_api_key
 
 ---
 
-This file will serve as a quick reference for understanding project scope, usage, architecture, and current development state for the Capital Compass financial planning application.
+This file will serve as a quick reference for understanding project scope, usage, architecture, and current development state for the FinancePro financial planning application.

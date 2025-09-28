@@ -102,7 +102,7 @@ const Navigation = () => {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex-shrink-0">
-              <span className="text-2xl font-bold text-indigo-600">Capital Compass</span>
+              <span className="text-2xl font-bold text-indigo-600">FinancePro</span>
             </Link>
           </div>
 

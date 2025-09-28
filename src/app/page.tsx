@@ -92,7 +92,7 @@ export default function Home() {
               <span className="block text-yellow-300">Financial Future</span>
             </h1>
             <p className="text-xl md:text-2xl mb-8 max-w-3xl mx-auto leading-relaxed">
-              Capital Compass helps you plan, save, and achieve your financial goals with personalized tools and expert guidance.
+              FinancePro helps you plan, save, and achieve your financial goals with personalized tools and expert guidance.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Link
@@ -158,7 +158,7 @@ export default function Home() {
             Ready to Transform Your Financial Life?
           </h2>
           <p className="text-xl mb-8 opacity-90">
-            Join thousands of users who have already taken control of their finances with Capital Compass.
+            Join thousands of users who have already taken control of their finances with FinancePro.
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Link
@@ -182,7 +182,7 @@ export default function Home() {
       <footer className="bg-gray-900 text-white py-12">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="text-2xl font-bold text-indigo-400 mb-4">Capital Compass</div>
+            <div className="text-2xl font-bold text-indigo-400 mb-4">FinancePro</div>
             <p className="text-gray-400 mb-6">
               Empowering your financial future with intelligent planning tools.
             </p>
